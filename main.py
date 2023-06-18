@@ -1,11 +1,12 @@
 import numpy as np
 from PIL import Image
 import os
+import argparse
 
 ASCII_CHARS = ["@%#*+=-:. ", "@%#*+=-:.  ,", "@%#*+=-:.   ;,_", " .-+=*#%@@", " ,-:.+=*#%@@", "_;,   .-+=*#%@@"]
 
 
-def scale_image(image, new_width=200):
+def scale_image(image, new_width=50):
     (original_width, original_height) = image.size
     aspect_ratio = original_height / float(original_width)
     new_height = int(aspect_ratio * new_width)
@@ -33,20 +34,20 @@ def map_pixels_to_ascii_chars(image, style_index=0):
     return ascii_str
 
 
-def image_to_ascii(image_path):
+def image_to_ascii(image_path, scale=50, style_index=0):
     try:
         image = Image.open(image_path)
     except Exception as e:
         print("Unable to open image file {image_path}.")
         print(e)
         return
-    image = convert_to_grayscale(scale_image(image))
-    ascii_str = map_pixels_to_ascii_chars(image)
+    image = convert_to_grayscale(scale_image(image, scale))
+    ascii_str = map_pixels_to_ascii_chars(image, style_index)
     return ascii_str
 
 
-def print_ascii(image_path):
-    ascii_str = image_to_ascii(image_path)
+def print_ascii(image_path, style_index=0, scale=50):
+    ascii_str = image_to_ascii(image_path, scale, style_index)
     print(ascii_str)
 
 
@@ -56,7 +57,20 @@ def save_ascii(image_path, output_path):
         f.write(ascii_str)
 
 
+def main():
+    parser = argparse.ArgumentParser(description='Convert images to ASCII art.')
+    parser.add_argument('input_file', help='Input image file')
+    parser.add_argument('-o', '--output_file', help='Output text file')
+    parser.add_argument('-s', '--style', help='Style index (default: 0)', type=int, default=0)
+    parser.add_argument('-w', '--width', help='Output width (default: 50)', type=int, default=50)
+    args = parser.parse_args()
+
+    if args.output_file:
+        save_ascii(args.input_file, args.output_file)
+    else:
+        print_ascii(args.input_file, args.style, args.width)
+
+
 if __name__ == "__main__":
-    print_ascii("assets/pain.jpg")
-    save_ascii("assets/pain.jpg", "output.txt")
+    main()
 
